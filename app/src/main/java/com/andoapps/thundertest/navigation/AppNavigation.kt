@@ -9,12 +9,15 @@ import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import com.andoapps.thundertest.ui.screens.FilesScreen
 import com.andoapps.thundertest.ui.screens.HomeScreen
 import com.andoapps.thundertest.ui.screens.MyListScreen
+import com.andoapps.thundertest.ui.screens.xtream.ProfileScreen
 import com.andoapps.thundertest.ui.screens.XtreamScreen
 
 @Composable
@@ -51,7 +54,23 @@ fun AppNavigation(
                     }
                 }
                 XtreamScreen(
-                    paddingValues = paddingValues
+                    paddingValues = paddingValues,
+                    onProfileClick = { profile ->
+                        navController.navigate(Screen.ProfileContent.withArgs(profile.id))
+                    }
+                )
+            }
+
+            // --- ACTUALIZACIÓN AQUÍ ---
+            composable(
+                route = Screen.ProfileContent.route,
+                arguments = listOf(navArgument("profileId") { type = NavType.StringType })
+            ) {
+                // Ya no extraemos 'profileId' ni usamos LaunchedEffect aquí.
+                // La pantalla ahora es autosuficiente gracias a su ViewModel.
+                ProfileScreen(
+                    paddingValues = paddingValues,
+                    setTopBar = setTopBar
                 )
             }
         }

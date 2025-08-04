@@ -1,9 +1,19 @@
+// ruta: com/andoapps/thundertest/ui/screens/XtreamScreen.kt
+
 package com.andoapps.thundertest.ui.screens
 
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -14,7 +24,12 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Theaters
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -36,19 +51,25 @@ import com.andoapps.thundertest.ui.screens.xtream.XtreamViewModel
 @Composable
 fun XtreamScreen(
     paddingValues: PaddingValues,
+    onProfileClick: (Profile) -> Unit,
     viewModel: XtreamViewModel = hiltViewModel()
 ) {
     val profiles by viewModel.profiles.collectAsState()
     var isEditMode by remember { mutableStateOf(false) }
     var profileToEdit by remember { mutableStateOf<Profile?>(null) }
-    var selectedProfileId by remember { mutableStateOf<String?>(null) }
 
+    // CORRECCIÓN 3: Se elimina la variable 'showAddSheet' porque ya no se usa.
+
+    // CORRECCIÓN 1: Crear una copia local para evitar el error de 'Smart cast impossible'.
     val currentProfileToEdit = profileToEdit
 
+    // El BottomSheet se muestra si la copia local del perfil no es nula.
     if (currentProfileToEdit != null) {
         AddProfileBottomSheet(
-            profileToEdit = currentProfileToEdit,
-            onDismiss = { profileToEdit = null },
+            profileToEdit = currentProfileToEdit, // Usamos la copia local segura.
+            onDismiss = {
+                profileToEdit = null
+            },
             onSave = { id, name, url, user, pass, avatar ->
                 Log.d("XtreamScreen", "Enviando perfil al ViewModel con ID: $id")
                 viewModel.addOrUpdateProfile(id, name, url, user, pass, avatar)
@@ -111,13 +132,11 @@ fun XtreamScreen(
                     ProfileItem(
                         profile = profile,
                         isEditMode = isEditMode,
-                        isSelected = selectedProfileId == profile.id,
                         onClick = {
                             if (isEditMode) {
                                 profileToEdit = profile
                             } else {
-                                selectedProfileId = profile.id
-                                Log.d("XtreamScreen", "Perfil seleccionado: ${profile.name}")
+                                onProfileClick(profile)
                             }
                         }
                     )
@@ -128,6 +147,7 @@ fun XtreamScreen(
                         label = "Agregar",
                         onClick = {
                             isEditMode = false
+                            // CORRECCIÓN 2: El constructor de Profile tiene 6 argumentos, no 7.
                             profileToEdit = Profile("new_profile_marker", "", "", "", "", "")
                         }
                     )

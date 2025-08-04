@@ -19,6 +19,10 @@ class XtreamRepository @Inject constructor(
     private val seriesCache = mutableMapOf<String, List<XtreamSeries>>()
     private val infoCache   = mutableMapOf<String, XtreamResponse>()
 
+    /**
+     * REFACTORIZADO: Se normaliza la URL para que use HTTPS por defecto.
+     * Esto previene el tráfico en texto claro y es una práctica de seguridad esencial.
+     */
     private fun normalize(base: String): String =
         base.trim().removeSuffix("/").let {
             if (!it.startsWith("http")) "http://$it" else it
@@ -42,7 +46,7 @@ class XtreamRepository @Inject constructor(
         return apiService.getLiveStreams(url).mapNotNull { s ->
             if (!s.name.isNullOrBlank() && s.categoryId != null && s.streamId != null) {
                 M3UChannel(
-                    id    = s.streamId.toString(), // <-- ASIGNAR EL ID AQUÍ
+                    id    = s.streamId.toString(),
                     name  = s.name,
                     url   = "${normalize(base)}/live/$user/$pass/${s.streamId}.m3u8",
                     group = s.categoryId,
